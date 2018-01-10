@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="user-scalable=0, initial-scale=1,minimum-scale=1, maximum-scale=1, width=device-width, minimal-ui=1">
+    <title>Mon Premier Shoot'em Up</title>
+    <script src="js/phaser.min.js"></script>
+    <style type="text/css">
+
+      body{
+        margin:0;
+      }
+    </style>
+  </head>
+
+  <body>
+
+  <script type="text/javascript">
+
+  var mainState = {
+    preload : function() {
+
+      game.load.spritesheet('hero', "assets/personnages/poit.png", 14, 31, 4);
+      game.load.image('mur', "assets/decors/terre.png");
+      game.load.image('terre' ,"assets/decors/BlocTerre.png");
+      game.load.image('terre2', "assets/decors/BlocTerre2.png");
+      game.load.image('porte', "assets/decors/porte.png");
+      game.load.image('poit', "assets/projectiles/poit.png")
+
+    },
+
+    create : function() {
+      game.stage.backgroundColor = '#3598db';
+      game.physics.startSystem(Phaser.Physics.ARCADE);
+      game.world.enableBody = true;
+	  game.world.setBounds(0, 0, 5000, 2000); // Permet de définir les limites du monde, notamment pour un monde plus grand
+
+      this.joueur = game.add.sprite(250, 100, 'hero');
+      game.camera.follow(this.joueur, Phaser.Camera.FOLLOW_LOCKON, 0.1, 0.1);//Permet de suivre le joueur
+
+      this.joueur.vitesse = 300 ;
+      this.joueur.jumpPower = 350 ;
+      this.joueur.canJump = true ;
+	  this.joueur.body.gravity.y = 600;
+      this.joueur.body.collideWorldBounds = true;
+
+      this.walls=game.add.group();
+      this.portes=game.add.group();
+	  this.joueur.touche = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR); 
+
+      this.cursors = game.input.keyboard.createCursorKeys();
+
+      this.joueur.animations.add('gauche', [0,2], 7, true);
+      this.joueur.animations.add('droite', [1,3], 7, true);
+
+
+      var level = [
+      	'o                                o',
+        'oooooooooooooooooooooooooooooo  oo',
+        'o                                o',
+        'o                           o    o',
+        'o     oxxxxx                     o',
+        'o     x                        o o',
+        'o             xxxxx              o',
+        'o                          x     o',
+        'ooooooooooooooooooooo  ooooooooooo',
+        'o                                o',
+        'o    o           o               o',
+        'o                                o',
+        'o                     o          o',
+        'o                                o',
+        'o                        o     c o',
+        'o                              o o',
+        'o                           o    o',
+
+      ];
+
+	for (var i = 0; i < level.length; i++) {
+	  for (var j = 0; j < level[i].length; j++) {
+	    if(level[i][j] == 'o' ) {
+	      var wall = game.add.sprite(25*j, 25*i,'terre') ;
+	        wall.scale.setTo(0.8,0.8); // On peut changer la taille de chaque mur
+	        this.walls.add(wall); //On ajoute le mur 'wall' au groupe "walls"
+	        wall.body.immovable = true ; // On rend les murs innamovible
+	    }
+	  }
+	}
+	for (var i = 0; i < level.length; i++) {
+	  for (var j = 0; j < level[i].length; j++) {
+	    if(level[i][j] == 'c' ) {
+	      var porte = game.add.sprite(25*j, 25*i,'porte') ;
+	        porte.scale.setTo(1, 1); // On peut changer la taille de chaque mur
+	        this.portes.add(porte); //On ajoute le mur 'wall' au groupe "walls"
+	        porte.body.immovable = true ; // On rend les murs innamovible
+	    }
+	  }
+	}
+    },
+
+    update : function() {
+      this.joueur.body.velocity.x = 0;
+      game.physics.arcade.collide(this.joueur, this.walls);
+      game.physics.arcade.collide(this.joueur, this.portes);
+
+      if(this.joueur.touche.isDown){
+
+      	feu(this.joueur.x, this.joueur.y);
+      }
+
+
+      if (this.cursors.right.isDown) // Permet de vérifier si une touche est appuyée.
+        {
+          this.joueur.animations.stop(null, true);
+          this.joueur.play('droite');
+          
+
+          this.joueur.body.velocity.x = this.joueur.vitesse;
+        }
+      if (this.cursors.left.isDown) // Permet de vérifier si une touche est appuyée.
+        {
+          this.joueur.animations.stop(null, true);
+          this.joueur.play('gauche');
+          this.joueur.body.velocity.x = -this.joueur.vitesse;
+        }
+       if (this.cursors.up.isDown &&this.joueur.body.touching.down) {
+      this.joueur.body.velocity.y = -350;
+  		}
+
+  	function feu(x,y) {
+	  var balle=game.add.sprite(x,y,'poit');
+	  balle.angle=0;
+	  balle.body.velocity.y=10;
+	  //balle.body.outOfBoundsKill=true;
+	}
+
+    },
+
+  };
+
+  var game = new Phaser.Game(500,200);
+  game.state.add('main', mainState);
+  game.state.start('main');
+
+  </script>
+  </body>
+</html>
